@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "77",
+      "properties": {
+        "name": "Москва",
+        "region_code": "77"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.3, 55.5], [37.9, 55.5], [37.9, 56.0], [37.3, 56.0], [37.3, 55.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "78",
+      "properties": {
+        "name": "Санкт-Петербург",
+        "region_code": "78"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[30.0, 59.7], [30.7, 59.7], [30.7, 60.1], [30.0, 60.1], [30.0, 59.7]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "50",
+      "properties": {
+        "name": "Московская область",
+        "region_code": "50"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[35.5, 54.5], [39.5, 54.5], [39.5, 56.5], [35.5, 56.5], [35.5, 54.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "47",
+      "properties": {
+        "name": "Ленинградская область",
+        "region_code": "47"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[28.5, 58.5], [35.5, 58.5], [35.5, 61.0], [28.5, 61.0], [28.5, 58.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "23",
+      "properties": {
+        "name": "Краснодарский край",
+        "region_code": "23"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.0, 43.5], [41.5, 43.5], [41.5, 46.5], [37.0, 46.5], [37.0, 43.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "54",
+      "properties": {
+        "name": "Новосибирская область",
+        "region_code": "54"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[75.0, 53.5], [84.0, 53.5], [84.0, 57.0], [75.0, 57.0], [75.0, 53.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "66",
+      "properties": {
+        "name": "Свердловская область",
+        "region_code": "66"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[57.0, 56.0], [66.0, 56.0], [66.0, 59.5], [57.0, 59.5], [57.0, 56.0]]]
+      }
+    }
+  ]
+}
