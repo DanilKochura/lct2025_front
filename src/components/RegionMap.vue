@@ -215,7 +215,6 @@ const getStyle = (region) => {
 const onMapReady = () => {
   console.log('Карта России готова')
 
-
   document.querySelector('.leaflet-control-attribution').remove()
 }
 

@@ -177,11 +177,15 @@ const initMap = () => {
   // Добавление базового слоя
   tileLayers[mapStyle.value].addTo(map)
 
+  document.querySelector('.leaflet-control-attribution').remove()
   // Создание маршрута
   createRoute()
 
   // Установка видимой области
   fitToBounds()
+
+  document.querySelector('.leaflet-control-attribution').remove()
+
 }
 
 // Создание маршрута и маркеров
@@ -403,6 +407,7 @@ const formatTime = (minutes) => {
 
 onMounted(() => {
   initMap()
+
 })
 
 onUnmounted(() => {
@@ -416,6 +421,8 @@ watch(() => props.flight, () => {
   if (map) {
     map.remove()
     initMap()
+    document.querySelector('.leaflet-control-attribution').remove()
+
   }
 }, {deep: true})
 </script>

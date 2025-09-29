@@ -96,12 +96,12 @@
     <div class="table-container">
       <div class="table-header">
         <div class="table-actions">
-          <button @click="exportToCSV" class="action-btn">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Экспорт CSV
-          </button>
+<!--          <button @click="exportToCSV" class="action-btn">-->
+<!--            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>-->
+<!--            </svg>-->
+<!--            Экспорт CSV-->
+<!--          </button>-->
           <div class="records-info">
             Показано {{ displayedFlights.length }} из {{ filteredFlights.length }} рейсов
           </div>
@@ -203,7 +203,7 @@
               </div>
             </td>
             <td>
-              <span class="region-badge">{{ getRegionName(flight.region) }}</span>
+              <span class="region-badge">{{ flight.region_name }}</span>
             </td>
             <td>
               <span class="operator">{{ flight.operator || 'Не указан' }}</span>
@@ -230,9 +230,9 @@
 
         <!-- Пустое состояние -->
         <div v-else-if="filteredFlights.length === 0" class="empty-state">
-          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
+<!--          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>-->
+<!--          </svg>-->
           <h3>Рейсы не найдены</h3>
           <p>Попробуйте изменить параметры поиска или фильтры</p>
         </div>
@@ -349,15 +349,16 @@ const uavTypes = computed(() => {
 })
 
 const regions = computed(() => {
-  const regionMap = {
-    11: 'Дальневосточный федеральный округ',
-    77: 'Москва',
-    78: 'Санкт-Петербург',
-    // Добавьте другие регионы
-  }
+  let list = {}
+  flights.value.forEach((f) => {
+    list[f.region] = f.region_name
+  });
 
-  const regionIds = [...new Set(flights.value.map(f => f.region))].filter(Boolean)
-  return regionIds.map(id => ({ id, name: regionMap[id] || `Регион ${id}` }))
+  let list_ret = [];
+  Object.keys(list).forEach((id) => {
+    list_ret.push({id: id, name: list[id]})
+  });
+  return list_ret
 })
 
 // Фильтрация и поиск
@@ -381,7 +382,7 @@ const filteredFlights = computed(() => {
   }
 
   if (filters.value.region) {
-    filtered = filtered.filter(flight => flight.region === filters.value.region)
+    filtered = filtered.filter(flight => flight.region === parseInt(filters.value.region))
   }
 
   if (filters.value.period !== 'all') {
