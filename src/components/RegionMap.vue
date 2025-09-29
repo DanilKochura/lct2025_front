@@ -18,62 +18,28 @@
             :key="region.properties?.cartodb_id || region.id"
             :geojson="region"
             :options-style="getStyle(region)"
-            @click="onRegionClick(region)"
-            @mouseover="onRegionHover(region)"
-            @mouseout="onRegionHoverOut(region)"
         >
-          <l-popup>
-            <div class="p-3 min-w-[250px]">
-              <h3 class="font-bold text-lg text-blue-800 mb-2">{{ getRegionName(region) }}</h3>
-              <div v-if="getRegionStats(region)" class="space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Полетов:</span>
-                  <strong class="text-blue-600">{{ getRegionStats(region).flights.toLocaleString() }}</strong>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Длительность:</span>
-                  <strong class="text-green-600">{{ getRegionStats(region).duration }} ч</strong>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Средняя длительность:</span>
-                  <strong class="text-purple-600">{{ getRegionStats(region).avgDuration }} мин</strong>
-                </div>
-                <div class="flex justify-between">
-                    <a class="px-6 py-2 bg-green-600 text-white text-decoration-none rounded w-full text-center hover:-translate-y-1" style="color: white" :href="'/region/'+region.properties.cartodb_id" target="_blank">
-                      Посмотреть подробнее
-                    </a>
-                </div>
-              </div>
-              <!--            <div v-else class="text-gray-500 text-sm py-2">-->
-              <!--              <div class="flex justify-between mb-1">-->
-              <!--                <span>Статус:</span>-->
-              <!--                <span class="text-yellow-600">Нет данных</span>-->
-              <!--              </div>-->
-              <!--              <div class="text-xs">Информация появится в ближайшее время</div>-->
-              <!--            </div>-->
-            </div>
-          </l-popup>
         </l-geo-json>
 
 
-      <!-- Маршруты полетов -->
-      <!--      <l-geo-json-->
-      <!--          v-if="showRoutes && routesData.features.length"-->
-      <!--          :geojson="routesData"-->
-      <!--          :options-style="getRouteStyle"-->
-      <!--      ></l-geo-json>-->
+<!--       Маршруты полетов -->
+<!--            <l-geo-json-->
+<!--                v-if="showRoutes && routesData.features"-->
+<!--                :geojson="routesData"-->
+<!--                :options-style="getRouteStyle"-->
+<!--            ></l-geo-json>-->
 
 <!--       Точки полетов с индивидуальными попапами-->
-<!--      <template v-if="showPoints && selectedRegion && filteredPoints">-->
-<!--        <l-geo-json-->
-<!--            v-for="data in filteredPoints.features"-->
-<!--            :key="`point-${data.properties.sid}`"-->
-<!--            :geojson="data"-->
-<!--            :options-style="getPointStyle"-->
-<!--            :options="geoJsonOptions"-->
-<!--        >-->
-<!--        </l-geo-json>-->
-<!--      </template>-->
+      <template v-if="showPoints && filteredPoints">
+        <l-geo-json
+            v-for="data in filteredPoints.features"
+            :key="`point-${data.properties.sid}`"
+            :geojson="data"
+            :options-style="getPointStyle"
+            :options="geoJsonOptions"
+        >
+        </l-geo-json>
+      </template>
 
       <!-- Зоны круговых полетов с индивидуальными попапами -->
       <!--      <l-geo-json-->
@@ -156,11 +122,11 @@ import L from 'leaflet'
 
 delete L.Icon.Default.prototype._getIconUrl
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://birthday.imdibil.ru/map-marker.svg',
-  iconUrl: 'https://birthday.imdibil.ru/map-marker.svg',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-})
+// L.Icon.Default.mergeOptions({
+//   iconRetinaUrl: 'https://birthday.imdibil.ru/map-marker.svg',
+//   iconUrl: 'https://birthday.imdibil.ru/map-marker.svg',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+// })
 
 const props = defineProps({
   regionStats: {
@@ -174,17 +140,16 @@ const props = defineProps({
   regions: {
     type: Object,
     default: () => ({flights: []})
-  }
+  },
+  id: String
 })
 
-const emit = defineEmits(['region-click'])
 
 const map = ref(null)
 const zoom = ref(4)
 const center = ref([61.5240, 105.3188])
 const regions = ref([])
-const hoveredRegion = ref(null)
-const selectedRegion = ref(null)
+const r_name = ref(null)
 
 const selectedFlight = ref(null)
 
@@ -204,6 +169,8 @@ const currentDate = new Date().toLocaleDateString('ru-RU', {
 const regionStats = computed(() =>
     Object.keys(props.regionStats).length > 0 ? props.regionStats : currentMonthStats
 )
+
+const routesData = ref({})
 
 const getRegionName = (region) => {
   return region.properties?.name || 'Неизвестный регион'
@@ -233,62 +200,36 @@ const getRegionRank = (regionId) => {
 }
 
 const getStyle = (region) => {
-  const stats = getRegionStats(region)
-  const flightCount = stats ? stats.flights : 0
 
-  let fillColor = 'rgba(229,231,235,0.22)' // Серый - нет данных
-
-  if (flightCount > 0) {
-    if (flightCount < 100) fillColor = 'rgba(211,252,225,0.82)'
-    else if (flightCount < 300) fillColor = 'rgba(165,224,187,0.68)'
-    else if (flightCount < 800) fillColor = 'rgba(127,213,158,0.75)'
-    else if (flightCount < 2000) fillColor = 'rgba(82,187,121,0.7)'
-    else fillColor = 'rgba(16,128,56,0.73)'
-  }
-
-  const isHovered = hoveredRegion.value === region
-  const isSelected = selectedRegion.value && getRegionId(region) === selectedRegion.value.id
-
+  let fillColor = 'rgba(25,141,65,0.82)'
   return {
-    fillColor: isSelected ? 'rgba(255,0,0,0.65)' : fillColor,
-    weight: isHovered || isSelected ? 4 : 2,
+    fillColor: fillColor,
+    weight: 4 ,
     opacity: 1,
-    color: isSelected ? 'rgba(255,0,0,0.76)' : (isHovered ? 'rgba(127,255,0,0.62)' : 'rgba(55,65,81,0.55)'),
-    dashArray: isSelected ? '5,5' : '3',
-    fillOpacity: isHovered || isSelected ? 0.9 : 0.7
+    color: 'rgba(127,255,0,0.62)',
+    dashArray: '5,5',
+    fillOpacity: 0.7
   }
 }
 
 const onMapReady = () => {
   console.log('Карта России готова')
+
+
   document.querySelector('.leaflet-control-attribution').remove()
 }
 
-const onRegionClick = (region) => {
-  const stats = getRegionStats(region)
-  // console.log(region, stats)
-  if (stats) {
-    selectedRegion.value = {...stats, id: getRegionId(region)}
-  }
+const onRegionClick = (regionId) => {
 
-  console.log('here')
-  emit('region-click', region)
+  const response = fetch('https://imdibil.ru/api/flights/' + regionId)
+      .then(response => response.json())
+      .then(data => {
+        filteredPoints.value = createPointsGeoJSON(data.flights)
+        flights.value = data.flights
+        routesData.value = createRoutesGeoJSON(flights.value)
+        console.log(filteredPoints.value)
+      });
 
-  if (!selectedRegion.value) {
-    console.log("Error!!!!")
-    return [];
-  }
-  console.log('HERE!')
-
-  const regionId = selectedRegion.value.id;
-  console.log(regionId)
-  // const response = fetch('https://imdibil.ru/api/flights/' + regionId)
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       filteredPoints.value = createPointsGeoJSON(data.flights)
-  //       flights.value = data.flights
-  //       console.log(filteredPoints.value)
-  //     });
 
 }
 
@@ -316,24 +257,7 @@ const onPointClick = (event) => {
 // Функция для получения полета по фиче
 
 
-// Стили для разных элементов
-const getRegionStyle = (region) => ({
-  fillColor: '#e5e7eb',
-  weight: 1,
-  opacity: 0.7,
-  color: '#374151',
-  fillOpacity: 0.3
-})
 
-const getPointStyle = (feature) => ({
-  // radius: 1,
-  // fillColor: feature.properties.type === 'departure' ? '#3b82f6' : '#10b981',
-  // color: '#AAA',
-  // weight: 2,
-  // opacity: 1,
-  // fillOpacity: 0.1,
-  // icon: "https://birthday.imdibil.ru/map-marker.svg"
-})
 
 const getRouteStyle = () => ({
   color: '#ef4444',
@@ -358,6 +282,10 @@ const getZoneStyle = () => ({
 const loadRegions = async () => {
   // console.log(props.regions)
   regions.value = props.regions
+  setTimeout(() => {
+    onRegionClick(props.id)
+
+  }, 500)
 }
 
 const filteredPoints = ref(null);
@@ -387,6 +315,16 @@ onMounted(() => {
 //     }
 //   }
 // }, { immediate: true });
+
+const getPointStyle = () => ({
+  radius: 5,
+  fillColor: '#ff4444',
+  color: '#ffffff',
+  weight: 1,
+  opacity: 1,
+  fillOpacity: 0.8
+});
+
 const geoJsonOptions = {
   onEachFeature: (feature, layer) => {
     layer.bindPopup(() => {
