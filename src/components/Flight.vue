@@ -1,0 +1,481 @@
+<template>
+  <DroneLoader v-if="!loaded"></DroneLoader>
+  <div v-else class="flight-analytics-container">
+    <!-- Хедер с навигацией -->
+    <div class="analytics-header">
+      <div class="header-title">
+        <h1>Детальная аналитика полета ID: {{ flight.sid }}</h1>
+      </div>
+
+    </div>
+
+    <!-- Основные метрики полета -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon bg-blue-100">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-label">Длительность полета</span>
+          <span class="metric-value">{{ formatDuration(flight.duration_min) }}</span>
+        </div>
+      </div>
+
+
+      <div class="metric-card">
+        <div class="metric-icon bg-purple-100">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-label">Тип БПЛА</span>
+          <span class="metric-value">{{ flight.uav_type }}</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-orange-100">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-label">Регион</span>
+          <span class="metric-value">{{ getRegionName(flight.region) }}</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon bg-orange-100">
+          <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-label">Расстояние</span>
+          <span class="metric-value">{{ calculateDistance() }} км</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Карта маршрута -->
+    <div class="section-card">
+      <FlightMap :flight="flight" :zone="zone"/>
+    </div>
+
+    <!-- Детальная статистика -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Временная статистика -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Временная статистика</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Время вылета</span>
+            <span class="stat-value">{{ flight.dep.time_hhmm }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Время прибытия</span>
+            <span class="stat-value">{{ flight.arr.time_hhmm }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Дней в полете</span>
+            <span class="stat-value">{{ Math.floor(flight.duration_min / 1440) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Часов в полете</span>
+            <span class="stat-value">{{ Math.floor(flight.duration_min / 60) }}</span>
+          </div>
+        </div>
+
+        <!-- График активности по часам -->
+<!--        <div class="mt-6">-->
+<!--          <h3 class="text-lg font-semibold mb-4">Распределение по времени суток</h3>-->
+<!--          <ActivityChart :flight="flight" />-->
+<!--        </div>-->
+      </div>
+
+      <!-- Технические параметры -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Технические параметры</h2>
+        </div>
+        <div class="tech-params">
+          <div class="param-group">
+            <label>Центр управления:</label>
+            <span>{{ flight.center_name || 'Не указан' }}</span>
+          </div>
+          <div class="param-group">
+            <label>Оператор:</label>
+            <span>{{ flight.operator || 'Не указан' }}</span>
+          </div>
+          <div class="param-group">
+            <label>Высота полета:</label>
+            <span>~{{ calculateAltitude() }} м</span>
+          </div>
+        </div>
+
+        <!-- Показатели эффективности -->
+      </div>
+    </div>
+
+    <!-- Аналитика данных SHR (если есть) -->
+    <div v-if="flight.shr && flight.shr.length > 0" class="section-card">
+      <div class="section-header">
+        <h2>Телеметрия полета</h2>
+        <div class="section-actions">
+          <button class="tab-btn" :class="{ active: telemetryView === 'chart' }" @click="telemetryView = 'chart'">
+            График
+          </button>
+          <button class="tab-btn" :class="{ active: telemetryView === 'table' }" @click="telemetryView = 'table'">
+            Таблица
+          </button>
+        </div>
+      </div>
+
+<!--      <TelemetryViewer-->
+<!--          :data="flight.shr"-->
+<!--          :view="telemetryView"-->
+<!--          :duration="flight.duration_min"-->
+<!--      />-->
+    </div>
+
+    <!-- Сравнение с аналогичными полетами -->
+<!--    <div class="section-card">-->
+<!--      <div class="section-header">-->
+<!--        <h2>Сравнение с аналогичными полетами</h2>-->
+<!--      </div>-->
+<!--      <FlightComparison :flight="flight" :similar-flights="similarFlights" />-->
+<!--    </div>-->
+
+
+  </div>
+</template>
+
+<script setup>
+import {computed, onMounted, ref} from 'vue'
+import {useRoute} from 'vue-router'
+import DroneLoader from "@/components/DroneLoader.vue";
+import FlightMap from "@/components/FlightMap.vue";
+
+// Компоненты (нужно будет создать)
+// import FlightMap from './FlightMap.vue'
+// import ActivityChart from './ActivityChart.vue'
+// import TelemetryViewer from './TelemetryViewer.vue'
+// import FlightComparison from './FlightComparison.vue'
+//
+const route = useRoute()
+const flight = ref({})
+const loaded = ref(false)
+const mapView = ref('route')
+const telemetryView = ref('chart')
+const similarFlights = ref([])
+const zone = ref({})
+// Загрузка данных полета
+onMounted(async () => {
+  const flightId = route.params.id
+  console.log(flightId)
+  await loadFlightData(flightId)
+  await loadSimilarFlights()
+
+  loaded.value = true
+})
+
+const loadFlightData = async (flightId) => {
+  // Загрузка данных полета по ID
+  // Временные данные для примера
+  const resp = await fetch('https://imdibil.ru/api/flight/'+flightId)
+  const data = await resp.json()
+
+  flight.value = data
+
+  const zone_resp = await fetch('https://imdibil.ru/api/zone/'+flightId)
+  zone.value = await zone_resp.json()
+
+
+}
+const calculatedDistance = computed(() => {
+  return calculateDistance(
+      flight.dep.lat, flight.dep.lon,
+      flight.arr.lat, flight.arr.lon
+  )
+})
+
+
+const loadSimilarFlights = async () => {
+  // Загрузка похожих полетов
+  similarFlights.value = [
+    // Массив похожих полетов
+  ]
+}
+
+// Вспомогательные функции
+const formatDuration = (minutes) => {
+  const days = Math.floor(minutes / 1440)
+  const hours = Math.floor((minutes % 1440) / 60)
+  const mins = minutes % 60
+  return `${days}д ${hours}ч ${mins}м`
+}
+
+const formatDate = (dateString) => {
+  try {
+    return new Date(dateString).toLocaleDateString('ru-RU')
+  } catch (e) {
+    return  ""
+  }
+}
+
+const formatDateRange = (start, end) => {
+  return `${formatDate(start)} - ${formatDate(end)}`
+}
+
+const formatCoordinates = (lat, lon) => {
+  return `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`
+}
+
+const getRegionName = (regionId) => {
+  const regions = {
+    11: 'Дальневосточный федеральный округ',
+    // ... другие регионы
+  }
+  return regions[regionId] || `${regionId}`
+}
+
+const calculateDistance = () => {
+  // Простой расчет расстояния между точками
+  const R = 6371 // Радиус Земли в км
+  const dLat = (flight.value.arr.lat - flight.value.dep.lat) * Math.PI / 180
+  const dLon = (flight.value.arr.lon - flight.value.dep.lon) * Math.PI / 180
+  const a =
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(flight.value.dep.lat * Math.PI / 180) *
+      Math.cos(flight.value.arr.lat * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return Math.round(R * c)
+}
+
+const calculateSpeed = () => {
+  const distance = calculateDistance()
+  const hours = flight.value.duration_min / 60
+  return hours > 0 ? Math.round(distance / hours) : 0
+}
+
+const calculateAltitude = () => {
+  // Упрощенный расчет высоты (можно заменить реальными данными)
+  return Math.round(1000 + Math.random() * 2000)
+}
+
+const exportReport = () => {
+  console.log('Экспорт отчета для полета:', flight.value.sid)
+}
+
+const shareFlight = () => {
+  console.log('Поделиться данными полета:', flight.value.sid)
+}
+</script>
+
+<style scoped>
+.flight-analytics-container {
+  @apply min-h-screen bg-gray-50 p-6;
+}
+
+.analytics-header {
+  @apply flex items-center justify-between mb-8 p-6 bg-white rounded-2xl shadow-lg border border-gray-100;
+}
+
+.back-btn {
+  @apply flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors;
+}
+
+.header-title h1 {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.flight-id {
+  @apply text-gray-600 text-sm;
+}
+
+.header-actions {
+  @apply flex gap-3;
+}
+
+.action-btn {
+  @apply flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors;
+}
+
+.metrics-grid {
+  @apply grid grid-cols-4  gap-6 mb-8;
+}
+
+.metric-card {
+  @apply flex items-center gap-4 p-6 bg-white rounded-2xl shadow-lg border border-gray-100;
+}
+
+.metric-icon {
+  @apply p-3 rounded-xl;
+}
+
+.metric-content {
+  @apply flex flex-col;
+}
+
+.metric-label {
+  @apply text-gray-600 text-sm;
+}
+
+.metric-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.section-card {
+  @apply bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6;
+}
+
+.section-header {
+  @apply flex justify-between items-center mb-6;
+}
+
+.section-header h2 {
+  @apply text-xl font-semibold text-gray-900;
+}
+
+.section-actions {
+  @apply flex gap-2;
+}
+
+.tab-btn {
+  @apply px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors;
+}
+
+.tab-btn.active {
+  @apply bg-blue-500 text-white border-blue-500;
+}
+
+.map-container {
+  @apply relative;
+}
+
+.route-info {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-gray-50 rounded-lg;
+}
+
+.route-point {
+  @apply flex items-center gap-3;
+}
+
+.point-marker {
+  @apply w-4 h-4 rounded-full;
+}
+
+.point-marker.departure { @apply bg-green-500; }
+.point-marker.arrival { @apply bg-red-500; }
+
+.point-details {
+  @apply text-sm;
+}
+
+.route-stats {
+  @apply flex flex-col justify-center gap-2;
+}
+
+.stat {
+  @apply flex justify-between items-center;
+}
+
+.stats-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.stat-item {
+  @apply flex justify-between items-center py-3 border-b border-gray-100;
+}
+
+.stat-label {
+  @apply text-gray-600;
+}
+
+.stat-value {
+  @apply font-semibold text-gray-900;
+}
+
+.tech-params {
+  @apply space-y-3;
+}
+
+.param-group {
+  @apply flex justify-between items-center py-2 border-b border-gray-100;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge.completed {
+  @apply bg-green-100 text-green-800;
+}
+
+.efficiency-metrics {
+  @apply mt-6;
+}
+
+.efficiency-grid {
+  @apply space-y-3;
+}
+
+.efficiency-item {
+  @apply flex items-center gap-3;
+}
+
+.efficiency-label {
+  @apply text-sm text-gray-600 w-32;
+}
+
+.efficiency-bar {
+  @apply flex-1 h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.efficiency-fill {
+  @apply h-full bg-gradient-to-r from-green-400 to-blue-500 rounded-full;
+}
+
+.efficiency-value {
+  @apply text-sm font-semibold text-gray-700 w-12 text-right;
+}
+
+.action-buttons {
+  @apply flex gap-4 justify-center mt-8;
+}
+
+.btn-primary {
+  @apply flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium;
+}
+
+.btn-secondary {
+  @apply flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .analytics-header {
+    @apply flex-col gap-4 items-stretch;
+  }
+
+  .metrics-grid {
+    @apply grid-cols-1;
+  }
+
+  .route-info {
+    @apply grid-cols-1;
+  }
+
+  .action-buttons {
+    @apply flex-col;
+  }
+}
+</style>

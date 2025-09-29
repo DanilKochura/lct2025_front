@@ -1,8 +1,10 @@
 // Утилиты для обработки данных полетов
 export const processFlightData = (flights) => {
+
     return flights.map(flight => {
         const hasDeparture = flight.dep && flight.dep.lat && flight.dep.lon;
         const hasArrival = flight.arr && flight.arr.lat && flight.arr.lon;
+
 
         return {
             ...flight,
@@ -16,56 +18,43 @@ export const processFlightData = (flights) => {
 
 // Создание GeoJSON для точек
 export const createPointsGeoJSON = (flights) => {
-    const features = [];
+    // Проверяем входные данные
+    if (!flights || !Array.isArray(flights)) {
+        console.error('createPointsGeoJSON: flights не является массивом', flights)
+        return {
+            type: 'FeatureCollection',
+            features: []
+        }
+    }
 
-    flights.forEach(flight => {
-        // Точка вылета
-        if (flight.dep && flight.dep.lat && flight.dep.lon) {
-            features.push({
+    const features = flights.map((flight, index) => {
+        // Проверяем наличие координат departure
+        if (flight.dep && flight.dep.lat !== null && flight.dep.lon !== null) {
+            return {
                 type: 'Feature',
                 properties: {
-                    type: 'departure',
-                    flightId: flight.sid,
-                    time: flight.dep.time_hhmm,
-                    date: flight.dep.date,
-                    uavType: flight.uav_type,
-                    center: flight.center_name,
-                    region: flight.region ?? 0
+                    flightId: flight.sid || `flight-${index}`,
+                    center_name: flight.center_name || 'Неизвестно',
+                    uav_type: flight.uav_type || 'Неизвестно',
+                    operator: flight.operator || 'Неизвестно'
                 },
                 geometry: {
                     type: 'Point',
-                    coordinates: [flight.dep.lon, flight.dep.lat]
+                    coordinates: [flight.dep.lon, flight.dep.lat] // [longitude, latitude]
                 }
-            });
+            }
         }
+        console.warn('Полет без координат departure:', flight)
+        return null
+    }).filter(feature => feature !== null)
 
-        // Точка прибытия (если отличается от вылета)
-        if (flight.arr && flight.arr.lat && flight.arr.lon &&
-            !(flight.dep.lat === flight.arr.lat && flight.dep.lon === flight.arr.lon)) {
-            features.push({
-                type: 'Feature',
-                properties: {
-                    type: 'arrival',
-                    flightId: flight.sid,
-                    time: flight.arr.time_hhmm,
-                    date: flight.arr.date,
-                    uavType: flight.uav_type,
-                    center: flight.center_name
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: [flight.arr.lon, flight.arr.lat]
-                }
-            });
-        }
-    });
+    console.log('Создано features:', features.length)
 
     return {
         type: 'FeatureCollection',
-        features
-    };
-};
-
+        features: features
+    }
+}
 // Создание GeoJSON для линий маршрутов
 export const createRoutesGeoJSON = (flights) => {
     const features = flights
