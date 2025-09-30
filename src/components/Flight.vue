@@ -92,57 +92,69 @@
             <span class="stat-value">{{ Math.floor(flight.duration_min / 60) }}</span>
           </div>
         </div>
-
-        <!-- График активности по часам -->
-<!--        <div class="mt-6">-->
-<!--          <h3 class="text-lg font-semibold mb-4">Распределение по времени суток</h3>-->
-<!--          <ActivityChart :flight="flight" />-->
-<!--        </div>-->
       </div>
 
-      <!-- Технические параметры -->
+      <!-- Информация о полете и операторе -->
       <div class="section-card">
         <div class="section-header">
-          <h2>Технические параметры</h2>
+          <h2>Информация о полете</h2>
         </div>
-        <div class="tech-params">
-          <div class="param-group">
-            <label>Центр управления:</label>
-            <span>{{ flight.center_name || 'Не указан' }}</span>
+
+        <!-- Карточка оператора -->
+        <div class="operator-card" v-if="flight.operator">
+          <div class="operator-header">
+            <div class="operator-avatar">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <div class="operator-info">
+              <h3 class="operator-name">{{ flight.operator }}</h3>
+              <span class="operator-role">Оператор БПЛА</span>
+            </div>
           </div>
-          <div class="param-group">
-            <label>Оператор:</label>
-            <span>{{ flight.operator || 'Не указан' }}</span>
-          </div>
-          <div class="param-group">
-            <label>Высота полета:</label>
-            <span>~{{ calculateAltitude() }} м</span>
+
+          <div class="operator-details">
+            <div class="detail-item">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              <span>{{ flight.center_name || 'ЦУП не указан' }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Показатели эффективности -->
+        <!-- Дополнительные параметры -->
+        <div class="flight-params-grid">
+          <div class="param-card">
+            <div class="param-icon bg-blue-50">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+              </svg>
+            </div>
+            <div class="param-content">
+              <span class="param-label">Высота полета</span>
+              <span class="param-value">~{{ calculateAltitude() }} м</span>
+            </div>
+          </div>
+
+          <div class="param-card">
+            <div class="param-icon bg-orange-50">
+              <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="param-content">
+              <span class="param-label">Дата полета</span>
+              <span class="param-value">{{ formatDate(flight.dep?.date) }}</span>
+            </div>
+            <div class="param-content">
+              <span class="param-label">Дата полета</span>
+              <span class="param-value">{{  }}</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <!-- Аналитика данных SHR (если есть) -->
-    <div v-if="flight.shr && flight.shr.length > 0" class="section-card">
-      <div class="section-header">
-        <h2>Телеметрия полета</h2>
-        <div class="section-actions">
-          <button class="tab-btn" :class="{ active: telemetryView === 'chart' }" @click="telemetryView = 'chart'">
-            График
-          </button>
-          <button class="tab-btn" :class="{ active: telemetryView === 'table' }" @click="telemetryView = 'table'">
-            Таблица
-          </button>
-        </div>
-      </div>
-
-<!--      <TelemetryViewer-->
-<!--          :data="flight.shr"-->
-<!--          :view="telemetryView"-->
-<!--          :duration="flight.duration_min"-->
-<!--      />-->
     </div>
 
     <!-- Сравнение с аналогичными полетами -->
@@ -196,7 +208,8 @@ const loadFlightData = async (flightId) => {
 
   const zone_resp = await fetch('https://imdibil.ru/api/zone/'+flightId)
   zone.value = await zone_resp.json()
-
+  console.log(zone.value)
+  console.log(flight.value)
 
 }
 const calculatedDistance = computed(() => {
@@ -488,6 +501,80 @@ const shareFlight = () => {
 
   .action-buttons {
     @apply flex-col;
+  }
+}
+
+
+/* Стили для карточки оператора */
+.operator-card {
+  @apply bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-6 border border-blue-100;
+}
+
+.operator-header {
+  @apply flex items-center gap-3 mb-3;
+}
+
+.operator-avatar {
+  @apply w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-blue-200;
+}
+
+.operator-info {
+  @apply flex flex-col;
+}
+
+.operator-name {
+  @apply font-semibold text-gray-900 text-lg;
+}
+
+.operator-role {
+  @apply text-gray-600 text-sm;
+}
+
+.operator-details {
+  @apply flex items-center gap-2 text-gray-700;
+}
+
+.detail-item {
+  @apply flex items-center gap-2 text-sm;
+}
+
+/* Стили для параметров полета */
+.flight-params-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.param-card {
+  @apply flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200;
+}
+
+.param-icon {
+  @apply p-2 rounded-lg;
+}
+
+.param-content {
+  @apply flex flex-col;
+}
+
+.param-label {
+  @apply text-gray-600 text-xs;
+}
+
+.param-value {
+  @apply font-semibold text-gray-900 text-sm;
+}
+
+.status-completed {
+  @apply text-green-600;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .flight-params-grid {
+    @apply grid-cols-1;
+  }
+
+  .operator-header {
+    @apply flex-col text-center;
   }
 }
 </style>

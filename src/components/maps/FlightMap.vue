@@ -184,7 +184,6 @@ const initMap = () => {
   // Установка видимой области
   fitToBounds()
 
-  document.querySelector('.leaflet-control-attribution').remove()
 
 }
 
@@ -421,7 +420,6 @@ watch(() => props.flight, () => {
   if (map) {
     map.remove()
     initMap()
-    document.querySelector('.leaflet-control-attribution').remove()
 
   }
 }, {deep: true})

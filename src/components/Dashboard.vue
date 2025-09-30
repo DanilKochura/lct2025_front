@@ -273,10 +273,9 @@ const handleRegionClick = (region) => {
 const loadRegions = async () => {
   try {
     // const response = await fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/russia.geojson')
-    const response = await fetch('https://imdibil.ru/api/map')
-    const data = await response.json()
-    regions.value = data.features
-    console.log(regions.value)
+    regions.value = await getRegions();
+
+
 
     const response_fl = await fetch('https://imdibil.ru/api/flights_stats')
     const data_fl = await response_fl.json()
@@ -309,4 +308,71 @@ const resetFilters = () => {
   }
   console.log('Фильтры сброшены')
 }
+
+// Простая обертка для IndexedDB
+class CacheDB {
+  constructor(dbName = 'AppCache', version = 1) {
+    this.dbName = dbName;
+    this.version = version;
+  }
+
+  async init() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('cache')) {
+          db.createObjectStore('cache', { keyPath: 'key' });
+        }
+      };
+    });
+  }
+
+  async set(key, value) {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
+      const request = store.put({ key, value, timestamp: Date.now() });
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
+
+  async get(key) {
+    const db = await this.init();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['cache'], 'readonly');
+      const store = transaction.objectStore('cache');
+      const request = store.get(key);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+}
+
+// Использование
+const cache = new CacheDB();
+
+async function getRegions() {
+  const cached = await cache.get('regions');
+  const cacheExpiry = 24 * 60 * 60 * 1000;
+
+  if (cached && Date.now() - cached.timestamp < cacheExpiry) {
+    return cached.value;
+  }
+
+  const response = await fetch('https://imdibil.ru/api/map');
+  const data = await response.json();
+
+  await cache.set('regions', data.features);
+  return data.features;
+}
+
 </script>
