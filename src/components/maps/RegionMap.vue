@@ -114,8 +114,7 @@ import {ref, computed, onMounted, watch, createApp} from 'vue'
 import {LMap, LTileLayer, LGeoJson, LPopup} from '@vue-leaflet/vue-leaflet'
 import FlightsPopup from "@/components/FlightsPopup.vue";
 import 'leaflet/dist/leaflet.css'
-import {currentMonthStats} from '../data/regionStats.js'
-import {createPointsGeoJSON, createRoutesGeoJSON, createZonesGeoJSON, processFlightData} from '../utils/flightUtils.js'
+import {createPointsGeoJSON, createRoutesGeoJSON, createZonesGeoJSON, processFlightData} from '@/utils/flightUtils.js'
 
 // Исправление для иконок Leaflet
 import L from 'leaflet'
@@ -167,7 +166,7 @@ const currentDate = new Date().toLocaleDateString('ru-RU', {
 
 // Используем переданную статистику или нашу симуляцию
 const regionStats = computed(() =>
-    Object.keys(props.regionStats).length > 0 ? props.regionStats : currentMonthStats
+    Object.keys(props.regionStats).length > 0 ? props.regionStats : {}
 )
 
 const routesData = ref({})

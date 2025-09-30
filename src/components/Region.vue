@@ -149,13 +149,12 @@
 
 <script setup>
 import {ref, computed, onMounted} from 'vue'
-import RussiaMap from './RussiaMap.vue'
 import BarChart from './Charts/BarChart.vue'
 import LineChart from './Charts/LineChart.vue'
 import DoughnutChart from './Charts/DoughnutChart.vue'
 import OperatorsRanking from './OperatorsRanking.vue'
 import DroneLoader from "@/components/DroneLoader.vue";
-import RegionMap from "@/components/RegionMap.vue";
+import RegionMap from "@/components/maps/RegionMap.vue";
 import FlightsTopVue from "@/components/FlightsTopVue.vue";
 
 const filters = ref({

@@ -161,7 +161,7 @@
 import {computed, onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 import DroneLoader from "@/components/DroneLoader.vue";
-import FlightMap from "@/components/FlightMap.vue";
+import FlightMap from "@/components/maps/FlightMap.vue";
 
 // Компоненты (нужно будет создать)
 // import FlightMap from './FlightMap.vue'
@@ -200,10 +200,14 @@ const loadFlightData = async (flightId) => {
 
 }
 const calculatedDistance = computed(() => {
-  return calculateDistance(
-      flight.dep.lat, flight.dep.lon,
-      flight.arr.lat, flight.arr.lon
-  )
+  if (flight.dep.lat && flight.arr.lat)
+  {
+    return calculateDistance(
+        flight.dep.lat, flight.dep.lon,
+        flight.arr.lat, flight.arr.lon
+    )
+  } else return 0
+
 })
 
 

@@ -165,7 +165,7 @@
 
 <script setup>
 import {ref, computed, onMounted} from 'vue'
-import RussiaMap from './RussiaMap.vue'
+import RussiaMap from './maps/RussiaMap.vue'
 import BarChart from './Charts/BarChart.vue'
 import LineChart from './Charts/LineChart.vue'
 import DoughnutChart from './Charts/DoughnutChart.vue'
