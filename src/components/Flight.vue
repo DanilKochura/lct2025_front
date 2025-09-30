@@ -36,7 +36,7 @@
         </div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card" v-bind:class="(!flight || !calculatedDistance) ? 'col-span-2' : ''">
         <div class="metric-icon bg-orange-100">
           <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -48,7 +48,7 @@
           <span class="metric-value">{{ getRegionName(flight.region) }}</span>
         </div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card" v-if="flight && calculatedDistance > 0">
         <div class="metric-icon bg-orange-100">
           <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -219,7 +219,12 @@ const formatDuration = (minutes) => {
   const days = Math.floor(minutes / 1440)
   const hours = Math.floor((minutes % 1440) / 60)
   const mins = minutes % 60
-  return `${days}д ${hours}ч ${mins}м`
+  if (days) {
+    return `${days}д ${hours}ч ${mins}м`
+  } else
+  {
+    return `${hours}ч ${mins}м`
+  }
 }
 
 const formatDate = (dateString) => {
@@ -309,9 +314,7 @@ const shareFlight = () => {
   @apply flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors;
 }
 
-.metrics-grid {
-  @apply grid grid-cols-4  gap-6 mb-8;
-}
+
 
 .metric-card {
   @apply flex items-center gap-4 p-6 bg-white rounded-2xl shadow-lg border border-gray-100;
@@ -458,6 +461,11 @@ const shareFlight = () => {
 
 .btn-secondary {
   @apply flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+}
+
+
+.metrics-grid {
+  @apply grid grid-cols-4  gap-6 mb-8;
 }
 
 /* Адаптивность */
