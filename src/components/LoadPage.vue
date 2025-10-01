@@ -162,69 +162,69 @@
     </div>
 
     <!-- История загрузок -->
-    <div class="upload-history">
-      <div class="section-card">
-        <div class="section-header">
-          <h2>История загрузок</h2>
-          <button @click="refreshHistory" class="refresh-btn" :disabled="isLoadingHistory">
-            <svg class="w-4 h-4" :class="{'animate-spin': isLoadingHistory}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            Обновить
-          </button>
-        </div>
-
-        <div class="history-table-container">
-          <table class="history-table">
-            <thead>
-            <tr>
-              <th class="text-left">Файл</th>
-              <th class="text-left">Размер</th>
-              <th class="text-left">Статус</th>
-              <th class="text-left">Дата загрузки</th>
-              <th class="text-left">Записей</th>
-              <th class="text-right">Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-if="uploadHistory.length === 0">
-              <td colspan="6" class="empty-state">
-                <div class="empty-content">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                  <p>Нет данных о загрузках</p>
-                </div>
-              </td>
-            </tr>
-            <tr v-for="item in uploadHistory" :key="item.id" class="history-row">
-              <td class="file-cell">
-                <div class="file-info">
-                  <div class="file-icon">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                  </div>
-                  <div class="file-details">
-                    <div class="file-name">{{ item.fileName }}</div>
-                    <div class="file-type">{{ item.fileType }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="size-cell">
-                {{ formatFileSize(item.fileSize) }}
-              </td>
-              <td class="status-cell">
-                  <span class="status-badge" :class="`status-${item.status}`">
-                    {{ getStatusText(item.status) }}
-                  </span>
-              </td>
-              <td class="date-cell">
-                {{ formatDate(item.uploadDate) }}
-              </td>
-              <td class="records-cell">
-                {{ item.recordsProcessed || 0 }} зап.
-              </td>
+<!--    <div class="upload-history">-->
+<!--      <div class="section-card">-->
+<!--        <div class="section-header">-->
+<!--          <h2>История загрузок</h2>-->
+<!--          <button @click="refreshHistory" class="refresh-btn" :disabled="isLoadingHistory">-->
+<!--            <svg class="w-4 h-4" :class="{'animate-spin': isLoadingHistory}" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>-->
+<!--            </svg>-->
+<!--            Обновить-->
+<!--          </button>-->
+<!--        </div>-->
+<!---->
+<!--        <div class="history-table-container">-->
+<!--          <table class="history-table">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--              <th class="text-left">Файл</th>-->
+<!--              <th class="text-left">Размер</th>-->
+<!--              <th class="text-left">Статус</th>-->
+<!--              <th class="text-left">Дата загрузки</th>-->
+<!--              <th class="text-left">Записей</th>-->
+<!--              <th class="text-right">Действия</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--            <tr v-if="uploadHistory.length === 0">-->
+<!--              <td colspan="6" class="empty-state">-->
+<!--                <div class="empty-content">-->
+<!--                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>-->
+<!--                  </svg>-->
+<!--                  <p>Нет данных о загрузках</p>-->
+<!--                </div>-->
+<!--              </td>-->
+<!--            </tr>-->
+<!--            <tr v-for="item in uploadHistory" :key="item.id" class="history-row">-->
+<!--              <td class="file-cell">-->
+<!--                <div class="file-info">-->
+<!--                  <div class="file-icon">-->
+<!--                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>-->
+<!--                    </svg>-->
+<!--                  </div>-->
+<!--                  <div class="file-details">-->
+<!--                    <div class="file-name">{{ item.fileName }}</div>-->
+<!--                    <div class="file-type">{{ item.fileType }}</div>-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </td>-->
+<!--              <td class="size-cell">-->
+<!--                {{ formatFileSize(item.fileSize) }}-->
+<!--              </td>-->
+<!--              <td class="status-cell">-->
+<!--                  <span class="status-badge" :class="`status-${item.status}`">-->
+<!--                    {{ getStatusText(item.status) }}-->
+<!--                  </span>-->
+<!--              </td>-->
+<!--              <td class="date-cell">-->
+<!--                {{ formatDate(item.uploadDate) }}-->
+<!--              </td>-->
+<!--              <td class="records-cell">-->
+<!--                {{ item.recordsProcessed || 0 }} зап.-->
+<!--              </td>-->
 <!--              <td class="actions-cell">-->
 <!--                <div class="action-buttons">-->
 <!--                  <button-->
@@ -258,33 +258,33 @@
 <!--                  </button>-->
 <!--                </div>-->
 <!--              </td>-->
-            </tr>
-            </tbody>
-          </table>
-        </div>
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--          </table>-->
+<!--        </div>-->
 
         <!-- Пагинация -->
-        <div v-if="uploadHistory.length > 0" class="pagination">
-          <button
-              @click="prevPage"
-              :disabled="currentPage === 1"
-              class="pagination-btn"
-          >
-            Назад
-          </button>
-          <span class="pagination-info">
-            Страница {{ currentPage }} из {{ totalPages }}
-          </span>
-          <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              class="pagination-btn"
-          >
-            Вперед
-          </button>
-        </div>
-      </div>
-    </div>
+<!--        <div v-if="uploadHistory.length > 0" class="pagination">-->
+<!--          <button-->
+<!--              @click="prevPage"-->
+<!--              :disabled="currentPage === 1"-->
+<!--              class="pagination-btn"-->
+<!--          >-->
+<!--            Назад-->
+<!--          </button>-->
+<!--          <span class="pagination-info">-->
+<!--            Страница {{ currentPage }} из {{ totalPages }}-->
+<!--          </span>-->
+<!--          <button-->
+<!--              @click="nextPage"-->
+<!--              :disabled="currentPage === totalPages"-->
+<!--              class="pagination-btn"-->
+<!--          >-->
+<!--            Вперед-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </template>
 
